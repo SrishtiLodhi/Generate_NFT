@@ -79,7 +79,7 @@ const Map = () => {
 
 
     const provider = new ethers.providers.JsonRpcProvider('https://rpc.ankr.com/polygon_amoy');
-    const wallet = new ethers.Wallet(env.REACT_APP_PRIVATE_KEY, provider);
+    const wallet = new ethers.Wallet("7cc23748e707f9363e0cd00cc9438db8f9fe90e10b4019bd158881ec842643f7", provider);
     const nftContract = new ethers.Contract(MyNFT.contractAddress, MyNFT.abi, wallet);
 
     function generateOSMUrl(feature) {
