@@ -4,7 +4,9 @@ import L from 'leaflet';
 import axios from 'axios';
 import 'leaflet/dist/leaflet.css';
 import { ethers } from 'ethers';
-import MyNFT from '../utils/MyNFT.json'; // Import the ABI of your NFT contract
+import MyNFT from '../utils/MyNFT.json'; 
+import env from "react-dotenv";
+
 
 const MapComponent = ({ center, selectedLocation, address }) => {
   const map = useMap();
@@ -28,6 +30,7 @@ const MapComponent = ({ center, selectedLocation, address }) => {
 };
 
 const Map = () => {
+
   const [address, setAddress] = useState('');
   const [suggestions, setSuggestions] = useState([]);
   const [selectedLocation, setSelectedLocation] = useState(null);
@@ -37,7 +40,6 @@ const Map = () => {
   const [loading, setLoading] = useState(false);
   const [txnHash, setTxnHash] = useState('');
 
-  // Handle address input change and fetch autocomplete suggestions
   const handleAddressChange = (e) => {
     setAddress(e.target.value);
 
@@ -58,7 +60,6 @@ const Map = () => {
     }
   };
 
-  // Handle suggestion click
   const handleSuggestionClick = (suggestion) => {
     const { lat, lon } = suggestion.properties;
     setSelectedLocation([lat, lon]);
@@ -76,8 +77,9 @@ const Map = () => {
 
     setLoading(true); // Start loading
 
+
     const provider = new ethers.providers.JsonRpcProvider('https://rpc.ankr.com/polygon_amoy');
-    const wallet = new ethers.Wallet('7cc23748e707f9363e0cd00cc9438db8f9fe90e10b4019bd158881ec842643f7', provider);
+    const wallet = new ethers.Wallet(env.REACT_APP_PRIVATE_KEY, provider);
     const nftContract = new ethers.Contract(MyNFT.contractAddress, MyNFT.abi, wallet);
 
     function generateOSMUrl(feature) {
@@ -114,27 +116,7 @@ const Map = () => {
     }
   };
 
-  // Transfer NFT
-  const transferNFT = async () => {
-    if (!recipientAddress) {
-      alert("Please enter a recipient address.");
-      return;
-    }
-
-    const provider = new ethers.providers.JsonRpcProvider('https://rpc.ankr.com/polygon_amoy');
-    const wallet = new ethers.Wallet('7cc23748e707f9363e0cd00cc9438db8f9fe90e10b4019bd158881ec842643f7', provider);
-    const nftContract = new ethers.Contract(MyNFT.contractAddress, MyNFT.abi, wallet);
-
-    try {
-      const tokenId = await nftContract.tokenCounter(); // Assuming tokenCounter gives the latest tokenId
-      const tx = await nftContract.safeTransferFrom(wallet.address, recipientAddress, tokenId.sub(1)); // Transfer the latest NFT
-      console.log("Transfer transaction hash:", tx.hash);
-      await tx.wait();
-      console.log("NFT transferred successfully.");
-    } catch (error) {
-      console.error("Error transferring NFT:", error);
-    }
-  };
+  
 
   return (
     <div style={{ padding: "5rem" }}>
@@ -162,7 +144,7 @@ const Map = () => {
         )}
       </div>
 
-      <button 
+      {/* <button 
         onClick={mintNFT}
         style={{ 
           marginTop: '20px', 
@@ -179,32 +161,34 @@ const Map = () => {
         disabled={loading}
       >
         {loading ? 'Minting NFT...' : 'Mint NFT'}
-      </button>
+      </button> */}
 
-      {txnHash && (
-        <p style={{ marginTop: '10px', color: '#007BFF' }}>
-          Transaction Hash: {txnHash}
-        </p>
-      )}
+    
 
-      {nftMinted && (
         <div style={{ marginTop: '20px' }}>
-          <h3>Transfer NFT</h3>
+          <h3 style={{ marginBottom: '8px' }}>Mint NFT</h3>
           <input 
             type="text" 
             value={recipientAddress} 
             onChange={(e) => setRecipientAddress(e.target.value)} 
             placeholder="Enter recipient address" 
             style={{ width: '300px', padding: '8px' }}
+            disabled={loading}
           />
           <button 
-            onClick={transferNFT}
+            onClick={mintNFT}
             style={{ marginLeft: '10px', padding: '10px 20px', backgroundColor: '#28a745', color: '#fff', border: 'none', borderRadius: '5px', cursor: 'pointer' }}
           >
-            Transfer NFT
+             {loading ? 'Minting NFT...' : 'Mint NFT'}
           </button>
         </div>
-      )}
+
+        {txnHash && (
+          <p style={{ marginTop: '10px', color: '#007BFF' }}>
+            Transaction Hash: {txnHash}
+          </p>
+        )}
+      
 
       <MapContainer center={mapCenter} zoom={13} style={{ height: '500px', width: '100%', marginTop: '20px' }}>
         <MapComponent center={mapCenter} selectedLocation={selectedLocation} address={address} />
